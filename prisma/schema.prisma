@@ -1,0 +1,166 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+
+
+model Product {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+  price       Decimal
+  stock       Int
+  imageUrl    String?
+  isActive    Boolean @default(true)
+
+  cartItems CartItem[]
+
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  orderItems OrderItem[]
+}
+
+model Cart {
+  id          String  @id @default(cuid())
+  user        User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId      String? @unique // 登录用户专用
+  anonymousId String? @unique // 匿名用户专用，存储在 cookie 中
+
+  items CartItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, anonymousId]) // 确保两者不同时为空，但 Prisma 不支持部分唯一，可用应用层保证
+}
+
+model CartItem {
+  id String @id @default(cuid())
+
+  cart   Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId String
+
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+
+  quantity Int @default(1)
+
+  createdAt DateTime @default(now())
+
+  @@unique([cartId, productId]) // 防止重复商品
+}
+
+// 新增订单模型
+model Order {
+  id        String      @id @default(cuid())
+  userId    String? // 可能为匿名订单，但通常购买后用户可能已登录，也可记录 user
+  user      User?       @relation(fields: [userId], references: [id])
+  email     String? // 匿名用户填写邮箱
+  total     Decimal // 总金额
+    stripeSessionId  String?  // 👈 新增字段，用于存储 Stripe Session ID
+  stripeSessionUrl String?  // 新增：保存 Stripe Checkout 的直接链接
+
+  status    OrderStatus @default(PENDING)
+  items     OrderItem[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Decimal // 当时的价格，防止商品价格变动
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id    String @id
+  name  String
+  email String
+  role  Role   @default(USER)
+
+  password      String?
+  emailVerified Boolean?
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+  sessions      Session[]
+  accounts      Account[]
+  cart          Cart?
+  orders        Order[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
