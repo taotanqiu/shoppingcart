@@ -48,4 +48,4 @@ public/uploads/*
 
 
 add-secrets.sh
-.github\workflows\ci-cd.yml
+
