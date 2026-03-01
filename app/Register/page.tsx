@@ -107,9 +107,9 @@ image: res.data.url,
 
           //  const re = await axios.post("/api/register",{...values, image: res.data.filename })
 const { data, error } = await authClient.signUp.email({
-  email: values.email,
+  email: values.email ?? '',
   password: values.password,
-  name: values.name?.trim() || "",          // 去除前后空格，默认空字符串
+  name: values.name?.trim() ?? '',          // 去除前后空格，默认空字符串
   image: res.data?.url ?? "",                // 默认空字符串
 });
 

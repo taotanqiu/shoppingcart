@@ -22,10 +22,13 @@ export async function registerUserAction({ name, email, password, image }: Regis
   
     const dbUser = await prisma.user.create({
       data: {
-        name,
-        email,
-        password,
-        Image,
+       email: email ?? '',
+    password,
+    name: name ?? undefined,   // 如果 name 为空，让数据库设为 null
+    image: image ?? undefined,
+    // 如果模型中有 role 字段且没有默认值，手动提供默认值
+    role: 'USER',
+    // 其他字段如果有必要，也添加进来
       },
     });
 

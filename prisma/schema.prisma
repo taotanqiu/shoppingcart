@@ -101,27 +101,26 @@ enum Role {
 }
 
 model User {
-  id    String @id
-  name  String
-  email String
-  role  Role   @default(USER)
-  banned        Boolean   @default(false)   // 👈 add this
-  banReason     String?                      // 👈 optional
-  banExpires    DateTime?                     // 👈 optional
+  id            String    @id @default(cuid())           // 添加默认值
+  name          String?                                  // 改为可选
+  email         String    @unique
+  role          Role      @default(USER)
+  banned        Boolean   @default(false)
+  banReason     String?
+  banExpires    DateTime?
   password      String?
   emailVerified Boolean?
   image         String?
-  createdAt     DateTime
-  updatedAt     DateTime
+  createdAt     DateTime  @default(now())                // 添加默认值
+  updatedAt     DateTime  @updatedAt                     // 添加自动更新
+
   sessions      Session[]
   accounts      Account[]
   cart          Cart?
   orders        Order[]
 
-  @@unique([email])
   @@map("user")
 }
-
 model Session {
   id        String   @id
   expiresAt DateTime
