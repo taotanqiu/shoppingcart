@@ -255,6 +255,7 @@ export default function ProductAddPage() {
                     src={preview}
                     alt="Preview"
                     fill
+                    
                     className="object-cover"
                   />
                 </div>

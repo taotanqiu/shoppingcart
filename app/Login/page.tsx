@@ -6,65 +6,58 @@ import { useState } from "react"
 import * as z from "zod"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { authClient } from "@/lib/auth-client";
-import { useCart } from "../contexts@/CartContext"
+import { authClient } from "@/lib/auth-client"
+import { useMergeCartAfterLogin } from "@/lib/useMergeCartAfterLogin"
 
 // 1️⃣ Zod validation schema
 const userSchema = z.object({
-  password: z.string()
-    .min(2, "Password must be at least 2 characters")
-    // .max(32, "Password must be at most 32 characters")
-    // .regex(/[A-Z]/, "Password must contain an uppercase letter")
-    // .regex(/[a-z]/, "Password must contain a lowercase letter")
-    // .regex(/[0-9]/, "Password must contain a number")
-    // .regex(/[@$!%*?&]/, "Password must contain a special character (@$!%*?&)")
-  ,
-  email: z.string().email({ message: "Invalid email" }),
+  password: z.string().min(2, "密码至少2个字符"),
+  email: z.email("邮箱格式不正确"),
   image: z.string().optional(),
 })
 
 // 2️⃣ TS type
 type UserFormValues = z.infer<typeof userSchema>
 
-export default function UserForm() {
+export default  function UserForm() {
   const [values, setValues] = useState<UserFormValues>({
     password: "",
     email: "",
   })
   const router = useRouter()
   const [errors, setErrors] = useState<Partial<Record<keyof UserFormValues, string>>>({})
+  const [loginError, setLoginError] = useState<string | undefined>(undefined)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const { refreshCart } = useCart()
 
-  async function mergeCartAfterLogin() {
-    try {
-      const response = await fetch('/api/cart/merge', {
-        method: 'POST',
-        credentials: 'include', // must include cookies so backend can identify current user and anonymous ID
-      })
+  // 1️⃣ 从 cookie 读取 anonymousId 的辅助函数
+const getAnonymousIdFromCookie = () => {
+    if (typeof document === 'undefined') return null; // optional guard
+    const cookies = document.cookie.split('; ').find(row => row.startsWith('anonymous_id='));
+    return cookies ? cookies.split('=')[1] : null;
+  };
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        console.error('Cart merge failed', errorData)
-        // can show an error message here
-        return
-      }
+  // 2️⃣ 合并购物车的函数（新版本）
 
-      const result = await response.json()
 
-      // After successful merge, refresh the cart state (if using CartContext)
-      refreshCart()
-    } catch (error) {
-      console.error('Network error or merge endpoint exception', error)
-    }
-  }
+const anonymousId = getAnonymousIdFromCookie();
+   const mergeCart = useMergeCartAfterLogin();
 
-  // 3️⃣ Submit handler
+
+
+
+
+
+
+
+  // 3️⃣ 提交处理
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setIsLoading(true)
+    setLoginError(undefined)
 
+    // 验证表单
     const result = userSchema.safeParse(values)
-
     if (!result.success) {
       const fieldErrors: Partial<Record<keyof UserFormValues, string>> = {}
       result.error.issues.forEach(err => {
@@ -72,30 +65,59 @@ export default function UserForm() {
         fieldErrors[key] = err.message
       })
       setErrors(fieldErrors)
+      setIsLoading(false)
       return
     }
 
     setErrors({})
 
     try {
-      
-
       const { data, error } = await authClient.signIn.email({
         email: values.email,
         password: values.password,
       })
 
       if (error) {
-        console.log("Login error:", error)
+        setLoginError(error.message || "登录失败，请检查邮箱和密码")
+        setIsLoading(false)
         return
       }
-      mergeCartAfterLogin()
 
-      router.replace("/")   // using replace is safer
+
+
+      // 登录成功 → 合并购物车（等待合并完成）
+     
+
+
+
+
+ 
+if (data?.user) {
+
+await mergeCart(anonymousId);
+  
+ 
+ 
+}
+
+
+
+
+      // 跳转至首页
+      router.replace("/")
+      // 刷新服务端组件（使首页重新获取数据）
       router.refresh()
     } catch (err) {
-      // TODO: call API to create/update user
+      console.error("登录异常", err)
+      setLoginError("网络错误，请稍后重试")
+      setIsLoading(false)
     }
+  }
+
+  // 更新字段并清除该字段的错误
+  const handleChange = (field: keyof UserFormValues, value: string) => {
+    setValues(prev => ({ ...prev, [field]: value }))
+    setErrors(prev => ({ ...prev, [field]: "" }))
   }
 
   return (
@@ -103,42 +125,48 @@ export default function UserForm() {
       onSubmit={handleSubmit}
       className="max-w-lg mx-auto space-y-6 p-6 border rounded-lg shadow-md bg-white mt-5"
     >
-      <h2 className="text-2xl font-bold text-center">LOGIN</h2>
+      <h2 className="text-2xl font-bold text-center">Login</h2>
 
-      {/* Email */}
+      {loginError && (
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+          {loginError}
+        </div>
+      )}
+
+      {/* 邮箱 */}
       <div className="flex flex-col">
-        <label className="mb-1 font-medium text-gray-700">Email</label>
+        <label className="mb-1 font-medium text-gray-700">email</label>
         <Input
           type="email"
-          placeholder="Enter email"
-          value={values.email || ""}
-          onChange={e => {
-            setErrors({...errors, email: ""})
-            setValues({ ...values, email: e.target.value })
-          }}
+          placeholder="email"
+          value={values.email}
+          onChange={e => handleChange("email", e.target.value)}
           className={`border ${errors.email ? "border-red-500" : "border-gray-300"} rounded-md px-3 py-2`}
+          disabled={isLoading}
         />
         {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
       </div>
 
-      {/* Password */}
+      {/* 密码 */}
       <div className="flex flex-col">
-        <label className="mb-1 font-medium text-gray-700">Password</label>
+        <label className="mb-1 font-medium text-gray-700">password</label>
         <Input
           type="password"
-          placeholder="Enter password"
-          value={values.password || ""}
-          onChange={e => {
-            setErrors({...errors, password: ""})
-            setValues({ ...values, password: e.target.value })
-          }}
+          placeholder="password"
+          value={values.password}
+          onChange={e => handleChange("password", e.target.value)}
           className={`border ${errors.password ? "border-red-500" : "border-gray-300"} rounded-md px-3 py-2`}
+          disabled={isLoading}
         />
         {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
       </div>
 
-      <Button type="submit" className="w-full bg-black text-white py-2">
-        Submit
+      <Button
+        type="submit"
+        className="w-full bg-black text-white py-2"
+        disabled={isLoading}
+      >
+        {isLoading ? "Logging..." : "Logged"}
       </Button>
     </form>
   )

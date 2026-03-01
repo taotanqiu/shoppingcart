@@ -3,13 +3,13 @@ import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 import { sendOrderReceipt } from '@/lib/email';
-
+import { revalidatePath } from 'next/cache';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-02-24.acacia',
 });
 
 export async function POST(req: NextRequest) {
-  console.log('=== Stripe Webhook Received ===');
+ 
 
   const body = await req.text();
   const sig = (await headers()).get('stripe-signature');
@@ -66,22 +66,31 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. 清空购物车
-    if (order.userId) {
-      const cart = await prisma.cart.findUnique({ where: { userId: order.userId } });
-      if (cart) {
-        await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
-      }
-    } else if (session.metadata?.anonymousCartId) {
+  // 3. 清空购物车
+let cartToDelete = null;
 
-      console.log("清空购物车清空购物车清空购物车")
-      
-      const cart = await prisma.cart.findUnique({
-        where: { anonymousId: session.metadata.anonymousCartId },
-      });
-      if (cart) {
-        await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
-      }
-    }
+if (order.userId) {
+  // 优先通过 userId 找
+  cartToDelete = await prisma.cart.findUnique({ where: { userId: order.userId } });
+} else if (session.metadata?.anonymousCartId) {
+  // 其次通过 anonymousId 找
+  cartToDelete = await prisma.cart.findUnique({
+    where: { anonymousId: session.metadata.anonymousCartId },
+  });
+}
+
+if (cartToDelete) {
+  console.log("准备删除购物车:", cartToDelete.id);
+  
+  // 使用 deleteMany 即使有关联报错也更容易排查，且不会因为记录不存在而崩溃
+  await prisma.cart.delete({
+    where: { id: cartToDelete.id }
+  });
+
+  // 关键：如果你用了 Next.js App Router，一定要在删除后清除缓存
+  revalidatePath('/cart');
+  // 如果是全站通用的购物车小图标，建议也刷新首页
+}
 
     // 4. 发邮件（忽略错误）
   if (paymentEmail && order) {   // 关键：检查 order 是否存在
@@ -92,6 +101,7 @@ export async function POST(req: NextRequest) {
   }
 }
     console.log(`Webhook processed successfully for order ${orderId}`);
+    
   } catch (error) {
     console.error('Error processing webhook:', error);
     // 不返回错误，避免 Stripe 重试（可选择性返回500）

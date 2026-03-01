@@ -26,6 +26,7 @@ interface CartContextType {
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   removeItem: (itemId: string) => Promise<void>;
   clearCart: () => Promise<void>;
+ 
 }
 
 // CartContext.tsx
@@ -68,6 +69,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch('/api/cart');
       if (!res.ok) throw new Error('Failed to fetch cart');
       const data = await res.json();
+
       setCart(data);
     } finally {
       setLoading(false);
@@ -164,22 +166,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   );
 
   // ===== Clear cart =====
-  const clearCart = useCallback(async () => {
-    const previousCart = cart;
+const clearCart = useCallback(async () => {
+  const previousCart = cart;
 
-    setCart((prev) => (prev ? { ...prev, items: [] } : prev));
+ 
+  setCart(null);
 
-    try {
-      const res = await fetch('/api/cart/clear', {
-        method: 'DELETE',
-      });
+  try {
+    const res = await fetch('/api/cart/clear', {
+      method: 'DELETE',
+    });
 
-      if (!res.ok) throw new Error('Clear failed');
-    } catch (error) {
-      setCart(previousCart);
-      throw error;
-    }
-  }, [cart]);
+    if (!res.ok) throw new Error('Clear failed');
+  
+  } catch (error) {
+  
+    setCart(previousCart);
+    throw error;
+  }
+}, [cart]);
+
+ 
 
   return (
     <CartContext.Provider
@@ -193,6 +200,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         updateQuantity,
         removeItem,
         clearCart,
+    
       }}
     >
       {children}

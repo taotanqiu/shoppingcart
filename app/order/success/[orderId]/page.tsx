@@ -90,7 +90,7 @@ export default function OrderSuccessPage({ params }: { params: Promise<{ orderId
         <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
         <p>Processing your order, please wait...</p>
         <p className="text-sm text-gray-500 mt-4">
-          If no response for a while, you'll be automatically returned to the cart.
+          If no response for a while, you will be automatically returned to the cart.
 
 
         </p>
@@ -113,7 +113,7 @@ export default function OrderSuccessPage({ params }: { params: Promise<{ orderId
           <div key={item.id} className="flex items-center gap-4 py-3 border-b last:border-0">
             <div className="w-16 h-16 relative flex-shrink-0">
               <Image
-                src={item.product.imageUrl || '/placeholder.png'}
+                src={item.product.imageUrl || 'https://dummyimage.com/300x300/f0f0f0/999999.png&text=No+Image'}
                 alt={item.product.name}
                 fill
                 className="object-cover rounded"

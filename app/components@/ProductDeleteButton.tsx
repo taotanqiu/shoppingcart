@@ -17,7 +17,7 @@ import {
 
  
 
-import { deleteProductAction } from "./ProductDeleteButtonAction";
+import { deleteProductAction } from "./ProductDeleteButtonAction=====";
 
 
 
@@ -32,7 +32,12 @@ const  handledeleteProduct = async (productId:string) => {
 
 
         try {
-          await deleteProductAction(productId);
+           const res = await fetch(`/api/products/delete/${productId}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('删除失败');
+  const data = await res.json();
+  console.log('删除成功', data);
   //  ==========================
         } catch (err) {
         console.log(err)
@@ -60,7 +65,7 @@ export default function ProductDeleteButton({ productId }: DeleteButtonProps) {
             
             ><Trash2 className="w-4 h-4" /></Button>
 
-
+ 
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

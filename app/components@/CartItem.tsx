@@ -35,9 +35,12 @@ export const CartItem = memo(function CartItem({
     if (newQty > item.product.stock) newQty = item.product.stock;
     if (newQty === item.quantity) return;
     try {
+
       await updateQuantity(item.id, newQty);
     } catch (error) {
       console.error('Update failed:', error);
+
+      
       setLocalQty(item.quantity); // 回退到原数量
     }
   };
@@ -48,7 +51,7 @@ export const CartItem = memo(function CartItem({
         {/* 商品图片 */}
         <div className="w-20 h-20 relative flex-shrink-0">
           <Image
-            src={item.product.imageUrl || '/placeholder.png'}
+            src={item.product.imageUrl || 'https://dummyimage.com/300x300/f0f0f0/999999.png&text=No+Image'}
             alt={item.product.name}
             fill
             className="object-cover rounded"

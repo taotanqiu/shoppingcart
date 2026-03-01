@@ -20,12 +20,14 @@ export default async function Navbar() {
   const session = await auth.api.getSession({ headers: await headers() });
 
 let isAdmin = false;
+let isUser= false;
 if (session?.user?.id) {
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { role: true }
   });
   isAdmin = user?.role === 'ADMIN';
+  isUser = user?.role === 'USER';
 }
 
 
@@ -64,6 +66,7 @@ if (session?.user?.id) {
 {session && <EmailPasswordSignOutButton/>}
   
 {isAdmin && <span  className="font-bold px-2 py-1">Admin&nbsp;&nbsp;: </span>  }
+{isUser && <span  className="font-bold px-2 py-1">User&nbsp;&nbsp;: </span>  }
 <span>{session?.user?.email}</span> 
 
 
@@ -73,7 +76,7 @@ if (session?.user?.id) {
 
 {!isAdmin && session?.user.image && (
   <Image
-    src={`/uploads/${session.user.image}`}
+    src={`${session.user.image}`}
     width={50}
     height={50}
     alt="Picture of the author"

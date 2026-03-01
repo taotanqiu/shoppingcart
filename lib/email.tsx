@@ -1,7 +1,8 @@
 // lib/email.tsx
 import { Resend } from 'resend';
 import { renderToBuffer } from '@react-pdf/renderer';
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import OrderReceiptPdf from '@/app/components@/OrderReceiptPdf';
+// import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 
 // 初始化 Resend（确保 RESEND_API_KEY 在环境变量中）
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -19,39 +20,36 @@ type Order = {
 };
 
 // PDF 样式
-const styles = StyleSheet.create({
-  page: { padding: 30 },
-  title: { fontSize: 24, marginBottom: 20 },
-  text: { fontSize: 12, marginBottom: 10 },
-  item: { flexDirection: 'row', justifyContent: 'space-between' },
-});
+// const styles = StyleSheet.create({
+//   page: { padding: 30 },
+//   title: { fontSize: 24, marginBottom: 20 },
+//   text: { fontSize: 12, marginBottom: 10 },
+//   item: { flexDirection: 'row', justifyContent: 'space-between' },
+// });
 
-// PDF 收据组件
-const OrderReceiptPdf = ({ order }: { order: Order }) => (
-  <Document>
-    <Page size="A4" style={styles.page}>
-      <Text style={styles.title}>Order Receipt #{order.id}</Text>
-      <Text style={styles.text}>Date: {new Date(order.createdAt).toLocaleDateString()}</Text>
-      <Text style={styles.text}>Total: ${order.total.toFixed(2)}</Text>
+// // PDF 收据组件
+// const OrderReceiptPdf = ({ order }: { order: Order }) => (
+//   <Document>
+//     <Page size="A4" style={styles.page}>
+//       <Text style={styles.title}>Order Receipt #{order.id}</Text>
+//       <Text style={styles.text}>Date: {new Date(order.createdAt).toLocaleDateString()}</Text>
+//       <Text style={styles.text}>Total: ${order.total.toFixed(2)}</Text>
 
-      <View style={{ marginTop: 20 }}>
-        <Text style={{ fontSize: 14, marginBottom: 10 }}>Item Details:</Text>
-        {order.items.map((item, index) => (
-          <View key={index} style={styles.item}>
-            <Text>{item.product.name} x {item.quantity}</Text>
-            <Text>${(item.price * item.quantity).toFixed(2)}</Text>
-          </View>
-        ))}
-      </View>
-    </Page>
-  </Document>
-);
+//       <View style={{ marginTop: 20 }}>
+//         <Text style={{ fontSize: 14, marginBottom: 10 }}>Item Details:</Text>
+//         {order.items.map((item, index) => (
+//           <View key={index} style={styles.item}>
+//             <Text>{item.product.name} x {item.quantity}</Text>
+//             <Text>${(item.price * item.quantity).toFixed(2)}</Text>
+//           </View>
+//         ))}
+//       </View>
+//     </Page>
+//   </Document>
+// );
 
-/**
- * 发送订单收据邮件
- * @param order 订单对象（必须包含 items 和 product 关联）
- * @param recipientEmail 收件人邮箱
- */
+
+
 export async function sendOrderReceipt(order: Order | null, recipientEmail: string) {
   // 1. 校验环境变量
   if (!process.env.RESEND_API_KEY) {
@@ -65,6 +63,7 @@ export async function sendOrderReceipt(order: Order | null, recipientEmail: stri
   if (!order) {
     throw new Error('Order data is missing, cannot generate PDF');
   }
+
 
   try {
     // 3. 生成 PDF 文件 Buffer

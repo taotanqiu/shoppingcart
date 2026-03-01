@@ -44,8 +44,8 @@ export default function UserForm() {
  
 const [file, setFile] = useState<File | null>(null)
 
-      const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+      const [Error, setError] = useState<string | null>(null);
+  // const [success, setSuccess] = useState<string | null>(null);
 
   const router = useRouter()
 
@@ -60,7 +60,7 @@ const [file, setFile] = useState<File | null>(null)
       return;
      }
     setError(null);
-    setSuccess(null);
+ 
     const result = userSchema.safeParse(values)
 
     
@@ -89,17 +89,28 @@ try {
         },
       });
 
-      if (res.data.success) {
-        setSuccess(res.data.filename);
-              setValues((prev) => ({ ...prev, image: res.data.filename }));
 
+
+      // ===========================
+
+ 
+      if (res.statusText==="OK") {
+    
+              setValues((prev) => ({ ...prev, image: res.data.url }));
+
+console.log({
+email: values.email,
+password: values.password,
+name: values.name || "",   // fallback to empty string if undefined
+image: res.data.url,
+},"❤🎉🤞🎶🤞🤞🤞✌✌✌😍😊😊👌👌👌😍😊😊")
 
           //  const re = await axios.post("/api/register",{...values, image: res.data.filename })
 const { data, error } = await authClient.signUp.email({
 email: values.email,
 password: values.password,
 name: values.name || "",   // fallback to empty string if undefined
-image: res.data.filename,
+image: res.data.url,
 });
 
 
@@ -110,7 +121,7 @@ if (error) {
   }
    
 
-  router.replace("/Login")   // 用 replace 更安全
+  router.replace("/")   // 用 replace 更安全
   router.refresh()
 
 
@@ -120,13 +131,13 @@ if (error) {
 
  
       } else {
-        setError(res.data.message || "上传失败");
+        setError(res.data || "上传失败1");
       }
 
 
 
     } catch (err) {
-      setError(err.message || "上传失败");
+      setError(err.message || "上传失败2");
     }
     // TODO: 调用 API 创建/更新用户
   }
@@ -139,7 +150,7 @@ if (error) {
       onSubmit={handleSubmit}
       className="max-w-lg mx-auto space-y-6 p-6 border rounded-lg shadow-md bg-white mt-5"
     >
-      <h2 className="text-2xl font-bold text-center">User Form</h2>
+      <h2 className="text-2xl font-bold text-center">Register</h2>
 
       {/* Name */}
       <div className="flex flex-col">
@@ -221,7 +232,7 @@ if (error) {
 
 
 />
-        {errors && <p className="text-red-500 text-sm mt-1">{error}</p>}
+        {errors && <p className="text-red-500 text-sm mt-1">{Error}</p>}
 
 
 

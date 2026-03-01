@@ -10,13 +10,24 @@ export async function DELETE(req: Request) {
 
     if (session?.user?.id) {
       // Delete all items in the user's cart
-      await prisma.cartItem.deleteMany({
-        where: { cart: { userId: session.user.id } },
-      });
+
+ 
+     
+
+await prisma.$transaction([
+  prisma.cartItem.deleteMany({
+        where: { cart: { userId:session?.user?.id  } },
+      }),
+  prisma.cart.deleteMany({ where: { userId:session?.user?.id } }),
+]);
+
+
+
     } else if (anonymousId) {
-      await prisma.cartItem.deleteMany({
-        where: { cart: { anonymousId } },
-      });
+     await prisma.$transaction([
+  prisma.cartItem.deleteMany({ where: { cart: { anonymousId } } }),
+  prisma.cart.deleteMany({ where: { anonymousId } }),
+]);
     } else {
       return NextResponse.json({ error: 'Cannot identify user' }, { status: 400 });
     }

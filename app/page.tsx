@@ -1,95 +1,75 @@
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import { prisma } from "@/lib/prisma";
-import ProductDeleteButton from "./components@/ProductDeleteButton";
-import ProductEditButton from "./components@/ProductEditButton";
-import { auth } from "@/lib/auth"; // Your Better Auth instance
+// app/page.tsx
+import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import Link from 'next/link'
-import AddToCartButton from "./components@/AddToCartButton";
+import Link from 'next/link';
+import { Suspense } from "react";
+import ProductList from "./components@/ProductList";
+import { ProductsSkeleton } from "./components@/ProductsSkeleton";
 
-export default async function Home() {
-  // 1. Get current user session
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Promise<{ page?: string; q?: string }>;
+}) {
   const session = await auth.api.getSession({
     headers: await headers()
   });
-  
-  // 2. Determine if user is ADMIN
   const isAdmin = session?.user?.role === "ADMIN";
-  
-  // 3. Fetch data
-  const allProduct = await prisma.product.findMany({where: { isActive: true }});
 
- 
-
+  // 解析当前搜索词和页码（用于分页链接）
+  const currentQ = (await searchParams)?.q || '';
+  const currentPage = Number((await searchParams)?.page) || 1;
 
   return (
-    <div   >
-      <h1 className="text-center text-3xl mt-5 font-bold leading-none">All Products</h1>
+    <div>
+<div className="flex  justify-between mt-5 items-center gap-10 flex-col sm:flex-row">
+        <h1 className="text-center text-3xl  font-bold flex-1">All Products</h1>
 
-   
+  <form action="/" method="GET" className="flex gap-2  flex-col sm:flex-row">
+    <input
+      type="text"
+      name="q"
+      defaultValue={currentQ}
+      placeholder="Search products..."
+      className="flex-1 border border-gray-300 rounded px-3 py-2"
+    />
+    <button
+      type="submit"
+      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+    >
+      Search
+    </button>
+    {currentQ && (
+      <Link
+        href="/"
+        className="bg-gray-300 text-gray-700 px-3 py-2 rounded hover:bg-gray-400"
+      >
+        Clear
+      </Link>
+    )}
+  </form>
+
   {isAdmin && (
- <div className="flex justify-end w-full ">
-  <Link href="/admin/product/add" className="bg-green-500 hover:bg-green-600 p-1">Add Products</Link>
+        <div className="">
+          <Link
+            href="/admin/product/add"
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          >
+            Add Products
+          </Link>
+        </div>
+      )}
 </div>
-  )}
+ 
+      
+
+
+
  
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-3">
-        {allProduct.map((product) => (
-          <Card key={product.id} className="flex flex-col">
-            {product.imageUrl && (
-              <div className="relative w-full h-48">
-                <Image
-                  src={product.imageUrl}
-                  alt={product.name}
-                  fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-
-                  style={{ objectFit: "cover" }}
-                />
-              </div>
-            )}
-
-            <CardHeader>
-              <CardTitle>{product.name}</CardTitle>
-            </CardHeader>
-
-            <CardContent className="flex-1">
-              <p className="text-gray-600 mb-2">{product.description}</p>
-              <p>
-                <span className="font-semibold">Price:</span> ${product.price.toString()}
-              </p>
-              <p>
-                 {!isAdmin && product.stock <=0 ? <span className="bg-red-500">Out of Stock</span> : <span className="font-semibold">Stock:{product.stock}</span> }
-              </p>
-              <p>
-
-   {isAdmin && <span className="font-semibold">Active:{product.isActive ? "Yes" : "No"}</span>  }
-
-
-
-                
-              </p>
-            </CardContent>
-
-            
- {!isAdmin && product.stock >0 && <AddToCartButton productId={product.id} />}
-
-
-
- {isAdmin && <CardFooter className=" bg-blue-200 flex gap-5 justify-center items-center px-3 py-1 mx-3">
-           
-              <ProductDeleteButton productId={product.id} />
-              <ProductEditButton productId={product.id} />
-            </CardFooter>}
- 
-
-            
-          </Card>
-        ))}
-      </div>
+      <Suspense fallback={<ProductsSkeleton />}>
+        <ProductList searchParams={searchParams} isAdmin={isAdmin} />
+      </Suspense>
     </div>
   );
 }

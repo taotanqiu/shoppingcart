@@ -6,7 +6,7 @@ import { admin } from "better-auth/plugins/admin";
 
 export const auth = betterAuth({
 
-database: prismaAdapter(prisma, { provider: "sqlite" }), //  "postgresql"
+database: prismaAdapter(prisma, { provider: "postgresql" }), //  "postgresql"
 socialProviders: { 
 github: { 
 clientId: process.env.GITHUB_CLIENT_ID as string, 
@@ -18,13 +18,13 @@ emailAndPassword: {
     maxPasswordLength: 128, 
 enabled: true, // ← must be true so email+password sign‑up works
 },
-  plugins: [
-    admin({
-      defaultRole: "USER",
-      adminRoles: ["ADMIN"],
-    
-    }),
-  ],
+plugins: [
+admin({
+defaultRole: "USER",
+adminRoles: ["ADMIN"],
+
+}),
+],
  
 
 });

@@ -1,0 +1,115 @@
+name: CI/CD Pipeline
+
+# 触发条件
+on:
+  push:
+    branches: [ main, develop ]  # 推送到主分支或开发分支时触发
+  pull_request:
+    branches: [ main ]            # 创建针对主分支的 PR 时触发
+
+jobs:
+  # 作业 1：测试和验证
+  test:
+    name: Test & Lint
+    runs-on: ubuntu-latest
+    # 定义环境变量，从 GitHub Secrets 中读取
+    env:
+      DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+
+    services:
+      # 为测试启动一个临时的 PostgreSQL 容器 [citation:4]
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Run database migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+
+      - name: Run unit tests
+        run: npm run test:ci  # 假设你配置了 test:ci 命令
+
+  # 作业 2：构建和部署（仅在推送到 main 分支时执行）
+  deploy:
+    name: Build & Deploy
+    needs: test  # 等待 test 作业成功
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Build application
+        run: npm run build
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+
+      # 方案 A：如果你使用 Vercel 部署（推荐）
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v20
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID}}
+          vercel-project-id: ${{ secrets.PROJECT_ID}}
+          vercel-args: '--prod'
+
+      # 方案 B：如果你使用自己的 VPS 部署 [citation:6]
+      # - name: Deploy via SSH
+      #   uses: appleboy/ssh-action@v1.0.3
+      #   with:
+      #     host: ${{ secrets.VPS_HOST }}
+      #     username: ${{ secrets.VPS_USER }}
+      #     key: ${{ secrets.VPS_SSH_KEY }}
+      #     script: |
+      #       cd /path/to/your/app
+      #       git pull
+      #       npm ci
+      #       npx prisma migrate deploy
+      #       npm run build
+      #       pm2 restart your-app

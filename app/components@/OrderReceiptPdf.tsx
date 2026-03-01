@@ -1,5 +1,5 @@
 // components/OrderReceiptPdf.tsx
-'use client'
+// 'use client'
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
 
@@ -82,7 +82,13 @@ interface OrderReceiptPdfProps {
 }
 
 // 3. Create Document component
-const OrderReceiptPdf: React.FC<OrderReceiptPdfProps> = ({ order }) => (
+const OrderReceiptPdf: React.FC<OrderReceiptPdfProps> = ({ order }) => {
+
+  if (!order) {
+    console.error('sendOrderReceipt 被调用时 order 为 null');
+    return; // 或者 throw new Error('Order is missing');
+  }
+  return (
   <Document>
     <Page size="A4" style={styles.page}>
       {/* Header */}
@@ -139,5 +145,6 @@ const OrderReceiptPdf: React.FC<OrderReceiptPdfProps> = ({ order }) => (
     </Page>
   </Document>
 );
+}
 
 export default OrderReceiptPdf;
