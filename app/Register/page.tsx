@@ -107,16 +107,16 @@ image: res.data.url,
 
           //  const re = await axios.post("/api/register",{...values, image: res.data.filename })
 const { data, error } = await authClient.signUp.email({
-email: values.email,
-password: values.password,
-name: values.name || "",   // fallback to empty string if undefined
-image: res.data.url,
+  email: values.email,
+  password: values.password,
+  name: values.name?.trim() || "",          // 去除前后空格，默认空字符串
+  image: res.data?.url ?? "",                // 默认空字符串
 });
 
 
 
 if (error) {
-    console.log("Login error:", error)
+   setError(error.message || '注册失败');
     return
   }
    
