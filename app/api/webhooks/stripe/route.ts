@@ -91,9 +91,19 @@ if (cartToDelete) {
 }
 
     // 4. 发邮件（忽略错误）
-  if (paymentEmail && order) {   // 关键：检查 order 是否存在
+if (paymentEmail && order) {
   try {
-    await sendOrderReceipt(order, paymentEmail);
+    // 转换 Decimal 为 number
+    const emailOrder = {
+      ...order,
+      total: Number(order.total),
+      // 如果订单项中的 price 也是 Decimal，也需要转换
+      items: order.items.map(item => ({
+        ...item,
+        price: Number(item.price),
+      })),
+    };
+    await sendOrderReceipt(emailOrder, paymentEmail);
   } catch (err) {
     console.error('Failed to send email:', err);
   }
