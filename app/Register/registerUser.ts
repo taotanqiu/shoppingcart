@@ -33,7 +33,8 @@ export async function registerUserAction({ name, email, password, image }: Regis
     });
 
     return { success: true, user: dbUser };
-  } catch (error) {
-    return { success: false, error: error?.message || "注册失败" };
-  }
+  } catch (err) {
+  const errorMessage = err instanceof globalThis.Error ? err.message : "注册失败";
+  return { success: false, error: errorMessage };
+}
 }
