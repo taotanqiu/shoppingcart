@@ -72,9 +72,21 @@ export async function POST(req: Request) {
       };
     });
 
-    const origin = req.headers.get('origin') ?? 'http://localhost:3000';
-    const successUrl = `${origin}/order/success/${order.id}`;
-    const cancelUrl = `${origin}/cart`;
+ 
+const host = req.headers.get('host') ?? 'localhost:3000';
+// 根据 host 判断协议
+const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? 'http' : 'https';
+// 构建基础 URL（优先使用环境变量）
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
+
+// 然后构建 success_url 和 cancel_url
+const successUrl = `${baseUrl}/order/success/${order.id}`;
+const cancelUrl = `${baseUrl}/cart`;
+
+
+
+
+
 
     const stripeSession = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
