@@ -11,9 +11,9 @@ import { useMergeCartAfterLogin } from "@/lib/useMergeCartAfterLogin"
 
 // 1️⃣ Zod validation schema
 const userSchema = z.object({
-  password: z.string().min(2, "密码至少2个字符"),
-  email: z.email("邮箱格式不正确"),
-  image: z.string().optional(),
+password: z.string().min(2, "Password must be at least 2 characters"),
+email: z.email("Invalid email format"),
+image: z.string().optional(),
 })
 
 // 2️⃣ TS type
@@ -85,7 +85,7 @@ const anonymousId = getAnonymousIdFromCookie();
 
 
 
-      // 登录成功 → 合并购物车（等待合并完成）
+
      
 
 

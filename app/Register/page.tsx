@@ -15,14 +15,13 @@ import { authClient } from "@/lib/auth-client";
 const userSchema = z.object({
     name: z.string().min(3, { message: "Name must be at least 3 characters" }).optional(),
 password:z.string()
-  .min(2, "密码至少2位")
-  // .max(32, "密码最多32位")
-  // .regex(/[A-Z]/, "密码必须包含大写字母")
-  // .regex(/[a-z]/, "密码必须包含小写字母")
-  // .regex(/[0-9]/, "密码必须包含数字")
-  // .regex(/[@$!%*?&]/, "密码必须包含特殊字符(@$!%*?&)");
-  // email: z.email({ message: "Invalid email" })
-  ,
+.min(6, "Password must be at least 6 characters")
+ .max(32, "Password cannot exceed 32 characters")
+ .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+ .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+ .regex(/[0-9]/, "Password must contain at least one number")
+ .regex(/[@$!%?&]/, "Password must contain at least one special character (@$!%?&)"),
+  
 
 
 

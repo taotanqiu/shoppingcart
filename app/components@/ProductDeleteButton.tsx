@@ -74,7 +74,7 @@ const  handledeleteProduct = async (productId:string) => {
 
  
       </AlertDialogTrigger>
-      <AlertDialogContent className="bg-gray-500">
+      <AlertDialogContent className="bg-yellow-500">
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
@@ -83,7 +83,7 @@ const  handledeleteProduct = async (productId:string) => {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel className="transition-colors duration-200 bg-green-500  hover:bg-green-700 ">Cancel</AlertDialogCancel>
           <AlertDialogAction 
           className="transition-colors duration-200 bg-red-500  hover:bg-red-700 "
           
