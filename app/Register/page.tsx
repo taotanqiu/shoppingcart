@@ -137,8 +137,9 @@ if (error) {
 
 
     } catch (err) {
-      setError(err.message || "上传失败2");
-    }
+  const errorMessage = err instanceof Error ? err.message : "上传失败2";
+  setError(errorMessage);
+}
     // TODO: 调用 API 创建/更新用户
   }
 
