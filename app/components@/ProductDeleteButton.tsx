@@ -15,7 +15,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
- 
+ import { useRouter } from 'next/navigation';
+
 
 
 
@@ -27,7 +28,12 @@ interface DeleteButtonProps {
 
 
             
+
+export default function ProductDeleteButton({ productId }: DeleteButtonProps) {
+   const router = useRouter();
+
 const  handledeleteProduct = async (productId:string) => {
+
 
 
         try {
@@ -37,6 +43,7 @@ const  handledeleteProduct = async (productId:string) => {
   if (!res.ok) throw new Error('删除失败');
   const data = await res.json();
   console.log('删除成功', data);
+ router.push('/')
   //  ==========================
         } catch (err) {
         console.log(err)
@@ -44,8 +51,9 @@ const  handledeleteProduct = async (productId:string) => {
         }
       }
 
-export default function ProductDeleteButton({ productId }: DeleteButtonProps) {
- 
+
+
+
   return (
    
        <AlertDialog>
@@ -66,7 +74,7 @@ export default function ProductDeleteButton({ productId }: DeleteButtonProps) {
 
  
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-gray-500">
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
@@ -76,7 +84,10 @@ export default function ProductDeleteButton({ productId }: DeleteButtonProps) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction  onClick={()=>handledeleteProduct(productId)} >Continue</AlertDialogAction>
+          <AlertDialogAction 
+          className="transition-colors duration-200 bg-red-500  hover:bg-red-700 "
+          
+          onClick={()=>handledeleteProduct(productId)} >Continue</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
