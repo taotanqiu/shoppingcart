@@ -166,7 +166,7 @@ await mergeCart(anonymousId);
         className="w-full bg-black text-white py-2"
         disabled={isLoading}
       >
-        {isLoading ? "Logging..." : "Logged"}
+        {isLoading ? "Logging..." : "Login"}
       </Button>
     </form>
   )

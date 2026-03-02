@@ -248,7 +248,7 @@ if (error) {
       </div>
 
       <Button type="submit" className="w-full bg-black text-white py-2">
-        Submit
+        Register
       </Button>
     </form>
   )

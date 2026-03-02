@@ -57,7 +57,8 @@ export const CartItem = memo(function CartItem({
             className="object-cover rounded"
           />
         </div>
-
+<div className="flex flex-col sm:flex-row items-center justify-between mx-3   w-full gap-3" >
+  
         {/* 商品信息 */}
         <div className="flex-1">
           <h3 className="font-semibold">{item.product.name}</h3>
@@ -66,7 +67,7 @@ export const CartItem = memo(function CartItem({
         </div>
 
         {/* 数量控制 */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2  mr-10">
           <Button
             variant="outline"
             size="icon"
@@ -114,10 +115,9 @@ export const CartItem = memo(function CartItem({
 
         {/* 小计 */}
         <div className="w-24 text-right font-medium">
-          ${(item.product.price * localQty).toFixed(2)}
-        </div>
+          <span>${(item.product.price * localQty).toFixed(2)}</span>
 
-        {/* 删除按钮 */}
+          {/* 删除按钮 */}
         <Button
           variant="ghost"
           size="icon"
@@ -125,6 +125,10 @@ export const CartItem = memo(function CartItem({
         >
           <Trash2 className="w-4 h-4" />
         </Button>
+        </div>
+
+        
+</div>
       </CardContent>
     </Card>
   );

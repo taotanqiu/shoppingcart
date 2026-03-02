@@ -83,34 +83,44 @@ export default function CheckoutPage() {
           <CardTitle>Items</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {cart.items.map((item) => (
-              <div key={item.id} className="flex items-center gap-4">
-                <div className="w-16 h-16 relative flex-shrink-0">
-                  <Image
-                    src={item.product.imageUrl || 'https://dummyimage.com/300x300/f0f0f0/999999.png&text=No+Image'}
-                    alt={item.product.name}
-                    fill
-                    className="object-cover rounded"
-                  />
-                </div>
+  <div className="space-y-4">
+    {cart.items.map((item, index) => (
+      <div
+        key={item.id}
+        className={`flex items-center gap-4 px-3 pb-1 ${
+          index !== cart.items.length - 1 ? 'border-b' : ''
+        }`}
+      >
+        {/* 图片区域 */}
+        <div className="w-16 h-16 relative flex-shrink-0">
+          <Image
+            src={item.product.imageUrl || 'https://dummyimage.com/300x300/f0f0f0/999999.png&text=No+Image'}
+            alt={item.product.name}
+            fill
+            className="object-cover rounded"
+          />
+        </div>
 
-                <div className="flex-1">
-                  <h3 className="font-semibold">{item.product.name}</h3>
-                  <p className="text-sm text-gray-600">
-                    Unit price: ${item.product.price}
-                  </p>
-                </div>
-
-                <div className="text-sm">x {item.quantity}</div>
-
-                <div className="font-medium">
-                  ${(item.product.price * item.quantity).toFixed(2)}
-                </div>
-              </div>
-            ))}
+        {/* 商品信息和价格 */}
+        <div className="flex-1 flex flex-col sm:flex-row items-center gap-4 w-full justify-between">
+          <div>
+            <h3 className="font-semibold">{item.product.name}</h3>
+            <p className="text-sm text-gray-600">
+              Unit price: ${item.product.price}
+            </p>
           </div>
-        </CardContent>
+
+          <div className="flex items-center gap-20">
+            <div className="text-sm">x {item.quantity}</div>
+            <div className="font-medium">
+              ${(item.product.price * item.quantity).toFixed(2)}
+            </div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+</CardContent>
       </Card>
 
       {/* Totals */}

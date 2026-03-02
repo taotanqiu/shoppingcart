@@ -37,12 +37,13 @@ if (session?.user?.id) {
  
   
     return (
-        <div className="w-full bg-blue-500 text-white px-6 py-4 flex justify-between items-center">
+        <div className="w-full bg-blue-500 text-white px-6 py-4 block sm:flex justify-between items-center">
     
     
     
     
-                <Link href="/">Home</Link>
+       <div className="w-full bg-blue-500 text-white px-6 py-4 flex justify-between items-center">
+         <Link href="/">Home</Link>
 
 
                 {!isAdmin && <div className="flex items-center gap-3">
@@ -54,19 +55,20 @@ if (session?.user?.id) {
         href="/cart" 
         className="px-3 py-1.5 bg-green-500 text-white text-sm rounded hover:bg-green-600 transition"
       >
-        Cart Page
+        Cart
       </Link>
     </div>  }
+       </div>
              
         
 
-<div className="flex items-center gap-3">
+<div className="flex items-center gap-1 justify-end bg-red-5000 w-full">
   {!session && <Link href="/Register"  className="px-3 py-1.5 bg-green-500 text-white text-sm rounded hover:bg-green-600 transition">Register</Link>}
 {!session && <Link href="/Login" className="px-3 py-1.5 bg-green-500 text-white text-sm rounded hover:bg-green-600 transition">Login</Link>}
 {session && <EmailPasswordSignOutButton/>}
   
-{isAdmin && <span  className="font-bold px-2 py-1">Admin&nbsp;&nbsp;: </span>  }
-{isUser && <span  className="font-bold px-2 py-1">User&nbsp;&nbsp;: </span>  }
+{isAdmin && <span  className="font-bold px-2 py-1">Admin&nbsp;: </span>  }
+{isUser && <span  className="font-bold px-2 py-1">User&nbsp;: </span>  }
 <span>{session?.user?.email}</span> 
 
 
@@ -80,7 +82,7 @@ if (session?.user?.id) {
     width={50}
     height={50}
     alt="Picture of the author"
-    className=""
+    className="hidden sm:inline-block"
   />
 )}
 </div>
